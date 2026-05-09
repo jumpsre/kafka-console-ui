@@ -36,6 +36,7 @@ if ([int]$javaMajorVersion -ge 9) {
     $JAVA_OPTS += " --add-opens java.base/java.lang=ALL-UNNAMED"
     $JAVA_OPTS += " --add-opens java.base/java.util=ALL-UNNAMED"
     $JAVA_OPTS += " --add-opens java.base/java.net=ALL-UNNAMED"
+    $JAVA_OPTS += " --add-opens java.security.jgss/sun.security.jgss=ALL-UNNAMED"
 } else {
     Write-Host "JDK version $javaVersionString, no need to add --add-opens parameters"
 }
@@ -44,6 +45,14 @@ $CONFIG_FILE = Join-Path $BASE_DIR "config\application.yml"
 $TARGET = Join-Path $BASE_DIR "lib\kafka-console-ui.jar"
 $DATA_DIR = $BASE_DIR
 $LOG_HOME = $BASE_DIR
+
+# Kerberos 支持：如果 config\krb5.conf 存在则注入
+$KRB5_CONF = Join-Path $BASE_DIR "config\krb5.conf"
+if (Test-Path $KRB5_CONF -PathType Leaf) {
+    Write-Host "Found krb5.conf, enable Kerberos: $KRB5_CONF"
+    $JAVA_OPTS += " -Djava.security.krb5.conf=$KRB5_CONF"
+}
+$JAVA_OPTS += " -Dsun.security.krb5.debug=false"
 
 if (-not (Test-Path $TARGET -PathType Leaf)) {
     Write-Error "ERROR: Jar file not found at [$TARGET]"

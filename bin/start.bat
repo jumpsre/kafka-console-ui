@@ -24,11 +24,20 @@ set "JAVA_OPTS=%JAVA_OPTS% --add-opens java.base/java.io=ALL-UNNAMED"
 set "JAVA_OPTS=%JAVA_OPTS% --add-opens java.base/java.lang=ALL-UNNAMED"
 set "JAVA_OPTS=%JAVA_OPTS% --add-opens java.base/java.util=ALL-UNNAMED"
 set "JAVA_OPTS=%JAVA_OPTS% --add-opens java.base/java.net=ALL-UNNAMED"
+set "JAVA_OPTS=%JAVA_OPTS% --add-opens java.security.jgss/sun.security.jgss=ALL-UNNAMED"
 
 set "CONFIG_FILE=%BASE_DIR%\config\application.yml"
 set "TARGET=%BASE_DIR%\lib\kafka-console-ui.jar"
 set "DATA_DIR=%BASE_DIR%"
 set "LOG_HOME=%BASE_DIR%"
+
+rem Kerberos 支持：如果 config\krb5.conf 存在则注入
+set "KRB5_CONF=%BASE_DIR%\config\krb5.conf"
+if exist "%KRB5_CONF%" (
+    echo Found krb5.conf, enable Kerberos: %KRB5_CONF%
+    set "JAVA_OPTS=%JAVA_OPTS% -Djava.security.krb5.conf=%KRB5_CONF%"
+)
+set "JAVA_OPTS=%JAVA_OPTS% -Dsun.security.krb5.debug=false"
 
 if not exist "%TARGET%" (
     echo ERROR: Jar file not found at [%TARGET%]

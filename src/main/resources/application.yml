@@ -39,11 +39,11 @@ spring:
       enabled: true
 #      settings:
 #        web-allow-others: true
-#  servlet:
-#    multipart:
-#      max-file-size: 10MB
-#      max-request-size: 10MB
-#      enabled: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
 logging:
   home: ./
 
@@ -66,3 +66,13 @@ auth:
 log:
   # 是否打印操作日志（增加、删除、编辑）
   print-controller-log: true
+
+# Kerberos 集成相关配置
+kafka-console:
+  kerberos:
+    # keytab 文件落盘目录，默认放在 data 目录下，集群配置里的 keyTab 路径会指向此目录下的文件
+    keytab-dir: ${data.dir:${user.dir}}/data/keytab
+    # krb5.conf 路径（仅用于前端展示和上传覆盖；运行时由 -Djava.security.krb5.conf 指定，重启生效）
+    krb5-conf-path: ${data.dir:${user.dir}}/config/krb5.conf
+    # 单 keytab 文件最大字节数，默认 64KB
+    keytab-max-bytes: 65536

@@ -66,7 +66,7 @@ public class AclServiceImpl implements AclService {
             return ResponseData.create().failed("Only support SASL protocol.");
         }
         if (!isEnableScram()) {
-            return ResponseData.create().failed("Only support SASL_SCRAM.");
+            return ResponseData.create().failed("用户增删改仅支持 SASL_SCRAM 机制；Kerberos(GSSAPI) 集群的 principal 由 KDC 统一管理，请联系 KDC 管理员。");
         }
         log.info("add or update user, username: {}, password: {}", name, pass);
         Tuple2<Object, String> tuple2 = configConsole.addOrUpdateUser(name, pass);
@@ -96,7 +96,7 @@ public class AclServiceImpl implements AclService {
             return ResponseData.create().failed("Only support SASL protocol.");
         }
         if (!isEnableScram()) {
-            return ResponseData.create().failed("Only support SASL_SCRAM.");
+            return ResponseData.create().failed("用户增删改仅支持 SASL_SCRAM 机制；Kerberos(GSSAPI) 集群的 principal 由 KDC 统一管理，请联系 KDC 管理员。");
         }
         log.info("delete user: {}", name);
         Tuple2<Object, String> tuple2 = configConsole.deleteUser(name);
@@ -108,7 +108,7 @@ public class AclServiceImpl implements AclService {
             return ResponseData.create().failed("Only support SASL protocol.");
         }
         if (!isEnableScram()) {
-            return ResponseData.create().failed("Only support SASL_SCRAM.");
+            return ResponseData.create().failed("用户增删改仅支持 SASL_SCRAM 机制；Kerberos(GSSAPI) 集群的 principal 由 KDC 统一管理，请联系 KDC 管理员。");
         }
         log.info("delete user and authority: {}", name);
         AclEntry entry = new AclEntry();

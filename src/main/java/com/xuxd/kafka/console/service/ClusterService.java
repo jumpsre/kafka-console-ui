@@ -1,7 +1,7 @@
 package com.xuxd.kafka.console.service;
 
 import com.xuxd.kafka.console.beans.ResponseData;
-import com.xuxd.kafka.console.beans.dos.ClusterInfoDO;
+import com.xuxd.kafka.console.beans.dto.ClusterInfoDTO;
 
 /**
  * kafka-console-ui.
@@ -16,13 +16,16 @@ public interface ClusterService {
 
     ResponseData getClusterInfoList();
 
-    ResponseData addClusterInfo(ClusterInfoDO infoDO);
+    ResponseData addClusterInfo(ClusterInfoDTO dto);
 
     ResponseData deleteClusterInfo(Long id);
 
-    ResponseData updateClusterInfo(ClusterInfoDO infoDO);
+    ResponseData updateClusterInfo(ClusterInfoDTO dto);
 
     ResponseData peekClusterInfo();
 
     ResponseData getBrokerApiVersionInfo();
+
+    /** 不写库的连通性检测：用 DTO 拼出 props，跑一次 describeCluster。 */
+    ResponseData testConnection(ClusterInfoDTO dto);
 }

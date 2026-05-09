@@ -10,6 +10,9 @@
 ## ACL说明
 最新代码运行即可看到acl菜单，将权限管理和认证的用户管理（SASL_SCRAM)进行了分离。分离之后，支持只开启SASL_SCRAM认证的时候（未开启鉴权），用户变更操作。或者使用其它认证机制下的权限管理操作（可视化的权限管理），但是可视化的认证用户管理目前只支持Scram。
 
+## Kerberos(GSSAPI) 支持
+v1.1.x 起支持以 Kerberos 机制接入 Kafka 集群（SASL_PLAINTEXT/GSSAPI 或 SASL_SSL/GSSAPI），集群表单里可直接选择认证方式、上传 keytab、测试连接，无需手敲 JAAS 配置。详见：[Kerberos配置说明](./document/kerberos/Kerberos配置.md)
+
 v1.0.6版本之前，如果kafka集群启用了ACL，但是控制台没看到Acl菜单，可以查看：[Acl配置启用说明](./document/acl/Acl.md)
 
 不支持从v1.0.x平滑升级v1.1.x

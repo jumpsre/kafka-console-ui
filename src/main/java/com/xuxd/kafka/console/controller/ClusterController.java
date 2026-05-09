@@ -41,7 +41,7 @@ public class ClusterController {
     @Permission("op:cluster-switch:add")
     @PostMapping("/info")
     public Object addClusterInfo(@RequestBody ClusterInfoDTO dto) {
-        return clusterService.addClusterInfo(dto.to());
+        return clusterService.addClusterInfo(dto);
     }
 
     @ControllerLog("删除集群信息")
@@ -55,7 +55,7 @@ public class ClusterController {
     @Permission("op:cluster-switch:edit")
     @PutMapping("/info")
     public Object updateClusterInfo(@RequestBody ClusterInfoDTO dto) {
-        return clusterService.updateClusterInfo(dto.to());
+        return clusterService.updateClusterInfo(dto);
     }
 
     @GetMapping("/info/peek")
@@ -66,5 +66,11 @@ public class ClusterController {
     @GetMapping("/info/api/version")
     public Object getBrokerApiVersionInfo() {
         return clusterService.getBrokerApiVersionInfo();
+    }
+
+    @Permission({"op:cluster-switch:add", "op:cluster-switch:edit"})
+    @PostMapping("/info/test-connection")
+    public Object testConnection(@RequestBody ClusterInfoDTO dto) {
+        return clusterService.testConnection(dto);
     }
 }

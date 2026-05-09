@@ -223,6 +223,22 @@ export const KafkaClusterApi = {
     url: "/cluster/info/api/version",
     method: "get",
   },
+  testConnection: {
+    url: "/cluster/info/test-connection",
+    method: "post",
+  },
+  uploadKeytab: {
+    url: "/cluster/keytab",
+    method: "post",
+  },
+  listKeytab: {
+    url: "/cluster/keytab",
+    method: "get",
+  },
+  deleteKeytab: {
+    url: "/cluster/keytab/",
+    method: "delete",
+  },
 };
 
 export const KafkaOpApi = {

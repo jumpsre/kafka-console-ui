@@ -31,10 +31,14 @@
           type="primary"
           @click="updateUser"
           v-action:acl:sasl-scram:add-update
+          :disabled="enableGssapi"
           >新增/更新用户</a-button
         >
         <span class="hint" v-show="!enableSasl"
           >未启用SASL SCRAM认证，不支持相关操作</span
+        >
+        <span class="hint" v-show="enableGssapi"
+          >Kerberos(GSSAPI) 集群的 principal 由 KDC 管理，控制台不支持新增/删除用户</span
         >
         <UpdateUser
           :visible="showUpdateUser"
@@ -346,6 +350,7 @@ export default {
   computed: {
     ...mapState({
       enableSasl: (state) => state.clusterInfo.enableSasl,
+      enableGssapi: (state) => state.clusterInfo.enableGssapi,
     }),
   },
 };

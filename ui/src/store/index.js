@@ -17,6 +17,10 @@ export default new Vuex.Store({
       id: undefined,
       clusterName: undefined,
       enableSasl: false,
+      // 仅当 mechanism 是 SCRAM-SHA-256 / SCRAM-SHA-512 时为 true
+      enableScram: false,
+      // 仅当 mechanism 是 GSSAPI 时为 true
+      enableGssapi: false,
     },
     auth: {
       enable: false,
@@ -29,14 +33,24 @@ export default new Vuex.Store({
       state.clusterInfo.id = clusterInfo.id;
       state.clusterInfo.clusterName = clusterInfo.clusterName;
       let enableSasl = false;
-      for (let p in clusterInfo.properties) {
-        if (enableSasl) {
-          break;
+      let enableScram = false;
+      let enableGssapi = false;
+      const props = clusterInfo.properties || [];
+      for (let i = 0; i < props.length; i++) {
+        const line = props[i] || "";
+        if (line.indexOf("security.protocol=SASL") !== -1) {
+          enableSasl = true;
         }
-        enableSasl =
-          clusterInfo.properties[p].indexOf("security.protocol=SASL") != -1;
+        if (line.indexOf("sasl.mechanism=SCRAM") !== -1) {
+          enableScram = true;
+        }
+        if (line.indexOf("sasl.mechanism=GSSAPI") !== -1) {
+          enableGssapi = true;
+        }
       }
       state.clusterInfo.enableSasl = enableSasl;
+      state.clusterInfo.enableScram = enableScram;
+      state.clusterInfo.enableGssapi = enableGssapi;
       setClusterInfo(clusterInfo);
     },
     [CLUSTER.DELETE]() {

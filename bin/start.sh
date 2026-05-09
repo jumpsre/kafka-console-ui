@@ -69,9 +69,19 @@ if [ "$JAVA_MAJOR_VERSION" -ge "9" ]; then
     JAVA_OPTS="$JAVA_OPTS --add-opens java.base/java.util=ALL-UNNAMED"
     JAVA_OPTS="$JAVA_OPTS --add-opens java.base/java.lang=ALL-UNNAMED"
     JAVA_OPTS="$JAVA_OPTS --add-opens java.base/java.net=ALL-UNNAMED"
+    JAVA_OPTS="$JAVA_OPTS --add-opens java.security.jgss/sun.security.jgss=ALL-UNNAMED"
 else
     echo "Jdk version $JAVA_VERSION, ignore --add-opens..."
 fi
+
+# Kerberos 支持：如果 config/krb5.conf 存在，则注入 -Djava.security.krb5.conf
+KRB5_CONF="$PROJECT_DIR/config/krb5.conf"
+if [ -f "$KRB5_CONF" ]; then
+    echo "Found krb5.conf, enable Kerberos: $KRB5_CONF"
+    JAVA_OPTS="$JAVA_OPTS -Djava.security.krb5.conf=$KRB5_CONF"
+fi
+# 排错时把下面这行改为 true 可打印 Kerberos 调试日志
+JAVA_OPTS="$JAVA_OPTS -Dsun.security.krb5.debug=false"
 
 # 启动应用
 nohup "$JAVA_CMD" $JAVA_OPTS -jar "$TARGET" \

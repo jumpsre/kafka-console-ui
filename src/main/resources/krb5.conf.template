@@ -1,0 +1,33 @@
+# krb5.conf 模板
+# 启用方式：把这个文件改名为 krb5.conf 放在发布包的 config/ 目录下，重启应用即可
+# 启动脚本会自动检测并注入 -Djava.security.krb5.conf
+#
+# 多 realm 的写法：在 [realms] 下面叠加多段，[domain_realm] 里把域名映射到对应 realm
+# 注意：java.security.krb5.conf 是 JVM 全局变量，全进程只有一份，多个 Kerberos 集群必须共用这一份配置文件
+
+[libdefaults]
+    default_realm = EXAMPLE.COM
+    dns_lookup_realm = false
+    dns_lookup_kdc = false
+    ticket_lifetime = 24h
+    renew_lifetime = 7d
+    forwardable = true
+    udp_preference_limit = 1
+
+[realms]
+    EXAMPLE.COM = {
+        kdc = kdc1.example.com
+        kdc = kdc2.example.com
+        admin_server = kdc1.example.com
+    }
+    # 第二个 realm 示例（如有多个 Kerberos Kafka 集群）
+    # FOO.LOCAL = {
+    #     kdc = kdc.foo.local
+    #     admin_server = kdc.foo.local
+    # }
+
+[domain_realm]
+    .example.com = EXAMPLE.COM
+    example.com = EXAMPLE.COM
+    # .foo.local = FOO.LOCAL
+    # foo.local = FOO.LOCAL

@@ -4,6 +4,7 @@ import com.xuxd.kafka.console.aspect.annotation.ControllerLog;
 import com.xuxd.kafka.console.beans.Credentials;
 import com.xuxd.kafka.console.config.LogConfig;
 import com.xuxd.kafka.console.filter.CredentialsContext;
+import com.xuxd.kafka.console.utils.SensitiveLogMasker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -67,6 +68,9 @@ public class ControllerLogAspect {
             params.append("]");
 
             String resStr = "[" + (res != null ? res.toString() : "") + "]";
+            // 脱敏：sasl.jaas.config / password / keytab 路径等敏感字段不落审计日志
+            String maskedParams = SensitiveLogMasker.mask(params.toString());
+            String maskedRes = SensitiveLogMasker.mask(resStr);
 
             StringBuilder sb = new StringBuilder();
             Credentials credentials = CredentialsContext.get();
@@ -77,14 +81,14 @@ public class ControllerLogAspect {
             shortMethodName = shortMethodName.substring(shortMethodName.lastIndexOf(".") + 1);
             sb.append("[").append(shortMethodName)
                     .append("调用完成: ")
-                    .append("请求参数=").append(params).append(", ")
-                    .append("响应值=").append(resStr).append(", ")
+                    .append("请求参数=").append(maskedParams).append(", ")
+                    .append("响应值=").append(maskedRes).append(", ")
                     .append("耗时=").append(endTime - startTime)
                     .append(" ms");
             log.info(sb.toString());
             return res;
         } catch (Throwable e) {
-            log.error("调用方法异常， 请求参数：" + params, e);
+            log.error("调用方法异常， 请求参数：" + SensitiveLogMasker.mask(params.toString()), e);
             throw e;
         }
     }

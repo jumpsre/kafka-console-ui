@@ -130,6 +130,26 @@ kafka-acls.sh --bootstrap-server <broker:9092> \
 
 **super.users 方式**（不推荐生产）：在 `server.properties` 里追加 `super.users=User:admin;User:<your-principal>`，重启 broker 或动态配置。
 
+### 用 Ranger 而不是 kafka-acls.sh
+
+Ranger plugin 在 broker 上拦在原生 ACL 之前生效，启用 Ranger 时 `kafka-acls.sh` 加的规则通常**不会被 broker 采纳**。请在 Ranger Admin UI 配 policy。
+
+控制台正常工作至少需要 3 条 policy（Cluster / Topic / ConsumerGroup），permission 与 kafka-acls.sh 的对应关系：
+
+| Ranger 资源 | Ranger 权限 | 对应 Kafka 原生 ACL | 用途 |
+|---|---|---|---|
+| `cluster`（也可能叫 `kafka-cluster`） | `describe`, `describe_configs`, `alter_configs`, `kafka_admin`, `idempotent_write` | `Cluster:Describe/DescribeConfigs/AlterConfigs/ClusterAction` | 控制台首页 + 运维菜单 |
+| `topic`（name=* 或具体名） | `describe`, `describe_configs`, `publish`, `consume`, `alter`, `alter_configs`, `create`, `delete` | `Topic:*` | Topic / 消息菜单 |
+| `consumergroup`（name=*） | `describe`, `consume`, `delete` | `Group:Describe/Read/Delete` | 消费组菜单 |
+| `transactionalid`（可选） | `publish`, `describe` | `TransactionalId:Write/Describe` | 事务消息 |
+
+注意点：
+- principal 用**短名**（错误日志里 `Session(User:xxx,...)` 的 xxx 部分），不带 `@REALM`
+- Ranger plugin 默认缓存 policy 30 秒（`ranger.plugin.kafka.policy.pollIntervalMs`），改完等 30 秒再试
+- Ranger 的 `kafka_admin` 对应 Kafka 原生 `Cluster:ClusterAction`，副本重分配 / preferred leader 等需要这个权限
+- Ranger 的 `publish=Write` / `consume=Read` / `configure=AlterConfigs` 是别名映射
+- 生产环境建议 topic / consumergroup 按前缀拆细，不给 `*`
+
 ### 打开调试日志
 
 排错时把 `bin/start.sh` 里 `-Dsun.security.krb5.debug=false` 改为 `true` 重启，会打印详细的 Kerberos 协商过程。

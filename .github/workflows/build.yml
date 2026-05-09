@@ -1,0 +1,40 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: "8"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Set up Node 14
+        uses: actions/setup-node@v4
+        with:
+          node-version: "14"
+
+      # frontend-maven-plugin 在 pom 里默认从 taobao 镜像拉 node，
+      # GitHub Actions 海外 runner 可能不通；先用 setup-node 装好系统 node，
+      # 这里编译时如果 frontend-maven-plugin 仍走 taobao 失败，可在 settings.xml 里覆盖 downloadRoot。
+      - name: Build (mvn package)
+        run: ./mvnw -B -P deploy -DskipTests clean package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kafka-console-ui
+          path: target/kafka-console-ui-*.zip
+          if-no-files-found: error

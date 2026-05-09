@@ -82,6 +82,53 @@ ssl.truststore.password=changeit
 | `LoginException: Unable to obtain password from user` | keytab 文件不可读 / 路径错误 | 看应用日志中实际拼出的 keyTab 路径；检查权限和拼写 |
 | `Server not found in Kerberos database (7)` | broker 主机名 / 反向解析在 KDC 中没注册 | 在 broker 端执行 `kinit -kt server.keytab kafka/host@REALM`；正向反向解析必须互通 |
 | `org.apache.kafka.common.errors.SaslAuthenticationException: Authentication failed` | 服务端不接受该 principal | broker 日志看具体拒绝原因；ACL 中是否给该 principal 授权 |
+| `ClusterAuthorizationException: Request ... is not authorized` + 错误里能看到 `Session(User:xxx,...)` | **Kerberos 认证已成功**，但 broker ACL 没给这个 principal `Cluster:Describe` 等权限。控制台所有页面都依赖 `DescribeCluster`，没有就全报这个 | 见下方"Cluster ACL 授权"小节 |
+
+### Cluster ACL 授权（最常踩的坑）
+
+如果错误信息形如：
+```
+ClusterAuthorizationException: Request Request(...session=Session(User:xxx,...))
+listenerName=ListenerName(SASL_PLAINTEXT)... is not authorized
+```
+
+`Session(User:xxx,...)` 出现就说明 **Kerberos 认证已通过**，纯粹是 broker ACL 没给这个 principal 集群级别（Cluster scope）的权限。控制台所有页面都依赖 `DescribeCluster`（取 broker 列表 + cluster id），没这个授权连首页都打不开。
+
+由 broker 管理员（具备 `super.users` 权限的账号）执行：
+
+**最小授权（仅控制台基本浏览）**
+```bash
+kafka-acls.sh --bootstrap-server <broker:9092> \
+  --command-config admin.properties \
+  --add \
+  --allow-principal "User:<你的-principal-短名>" \
+  --operation Describe --operation DescribeConfigs \
+  --cluster
+```
+
+**完整授权（含改配置、重分配、限流等运维功能）**
+```bash
+kafka-acls.sh --bootstrap-server <broker:9092> \
+  --command-config admin.properties \
+  --add \
+  --allow-principal "User:<你的-principal-短名>" \
+  --operation Describe --operation DescribeConfigs \
+  --operation Alter --operation AlterConfigs \
+  --operation ClusterAction \
+  --cluster
+```
+
+**注意**：`User:xxx` 的 `xxx` 是错误信息 `Session(User:xxx,...)` 里的格式（**短名，不带 `@REALM`**）。写成 fullname 会匹配不上。
+
+**查现状**：
+```bash
+kafka-acls.sh --bootstrap-server <broker:9092> \
+  --command-config admin.properties \
+  --list \
+  --principal "User:<你的-principal-短名>"
+```
+
+**super.users 方式**（不推荐生产）：在 `server.properties` 里追加 `super.users=User:admin;User:<your-principal>`，重启 broker 或动态配置。
 
 ### 打开调试日志
 

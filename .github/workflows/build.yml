@@ -32,6 +32,12 @@ jobs:
       - name: Build (mvn package)
         run: ./mvnw -B -P deploy -DskipTests clean package
 
+      # 现有测试套件依赖外部 Kafka，整体跳过；
+      # 但 Kerberos 相关的纯工具类单测必须跑通（target/test-classes 在上一步已编译，
+      # 直接调 surefire:test goal 不重跑前端/Scala 编译）
+      - name: Run Kerberos utility unit tests
+        run: ./mvnw -B surefire:test -Dtest=SaslUtilTest,SensitiveLogMaskerTest -DfailIfNoTests=true
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

@@ -35,6 +35,10 @@ public class ContextSetFilter implements Filter {
     {
         excludes.add("/cluster/info/peek");
         excludes.add("/cluster/info");
+        // 测试连接：是给"还没保存的新集群"试连用的，自然不需要已有 cluster 上下文
+        excludes.add("/cluster/info/test-connection");
+        // keytab 文件管理：集群无关，要在新增集群之前就能上传
+        excludes.add("/cluster/keytab");
         excludes.add("/config/console");
         excludes.add("/op/console/export");
         excludes.add("/op/console/import");
@@ -49,7 +53,9 @@ public class ContextSetFilter implements Filter {
         try {
             HttpServletRequest request = (HttpServletRequest) req;
             String uri = request.getRequestURI();
-            if (!excludes.contains(uri)) {
+            // /cluster/keytab/{fileId} 这种 URI 是路径参数，无法用 contains 完全匹配，单独前缀豁免
+            boolean excluded = excludes.contains(uri) || uri.startsWith("/cluster/keytab/");
+            if (!excluded) {
                 String headerId = request.getHeader(Header.ID);
                 String specificId = request.getHeader(Header.SPECIFIC_ID);
                 if (StringUtils.isNotBlank(specificId)) {
